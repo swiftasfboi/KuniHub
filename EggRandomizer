@@ -1,2 +1,3 @@
-loadstring(game:HttpGet("https://cdn.sourceb.in/bins/PZkWll1LOS/0", true))()
+ID="7e7434ea-2db4-4205-a1a7-aea137d29e91";
+loadstring(game:HttpGet("https://cdn.reverse.software/loader.luau"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/yuuhayate2/GrowAGarden1/refs/heads/main/eggrandomizer"))()
