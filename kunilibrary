@@ -1,0 +1,1121 @@
+-- Rayfield UI Loader by Kuni (Organized Tabs)
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+--// Main Window
+local Window = Rayfield:CreateWindow({
+    Name = "Script Loader by Kuni",
+    LoadingTitle = "Grow A Garden",
+    LoadingSubtitle = "Converted from Yawi Library",
+    KeySystem = false,
+})
+
+--// Tabs
+local PetsTab = Window:CreateTab("Pet Scripts")
+local HubsTab = Window:CreateTab("Script Hubs")
+local UtilsTab = Window:CreateTab("Utilities")
+
+--// Helper for remote buttons (kept as-is if no source was provided)
+local function createRemoteButton(tab, name, url)
+    tab:CreateButton({
+        Name = name,
+        Callback = function()
+            pcall(function()
+                loadstring(game:HttpGet(url))()
+            end)
+        end,
+    })
+end
+
+----------------------------------------------------------------
+-- EMBEDDED SCRIPTS (from the sources you provided)
+----------------------------------------------------------------
+
+-- Moon Cat Ability Range Changer
+local function Run_MoonCatChanger()
+    -- 🖤 Glass Theme Moon Cat Ability Range GUI (Draggable)
+
+    -- Services
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+    local Player = Players.LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+
+    -- Cleanup old GUI if exists
+    if PlayerGui:FindFirstChild("MoonCatRangeGUI") then
+        PlayerGui.MoonCatRangeGUI:Destroy()
+    end
+
+    -- ScreenGui
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "MoonCatRangeGUI"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = PlayerGui
+
+    -- Main Frame
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 250, 0, 120)
+    MainFrame.Position = UDim2.new(0.5, -125, 0.5, -60)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30) -- dark glass
+    MainFrame.BackgroundTransparency = 0.6
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+
+    -- Rounded corners
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 15)
+    UICorner.Parent = MainFrame
+
+    -- Glow/Stroke
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(0, 200, 255) -- cyan glow
+    Stroke.Thickness = 2
+    Stroke.Transparency = 0.5
+    Stroke.Parent = MainFrame
+
+    -- Title
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -20, 0, 40)
+    Title.Position = UDim2.new(0, 10, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🌙 MOON CAT ABILITY RANGE V1"
+    Title.TextColor3 = Color3.fromRGB(0, 200, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextWrapped = true
+    Title.Parent = MainFrame
+
+    -- Apply Button
+    local ApplyButton = Instance.new("TextButton")
+    ApplyButton.Size = UDim2.new(0, 180, 0, 40)
+    ApplyButton.Position = UDim2.new(0.5, -90, 0, 70)
+    ApplyButton.BackgroundColor3 = Color3.fromRGB(30, 30, 50) -- dark glass button
+    ApplyButton.Text = "Apply Mooncat Range"
+    ApplyButton.TextColor3 = Color3.fromRGB(0, 200, 255)
+    ApplyButton.Font = Enum.Font.GothamBold
+    ApplyButton.TextSize = 14
+    ApplyButton.Parent = MainFrame
+
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 12)
+    ButtonCorner.Parent = ApplyButton
+
+    -- Button Hover Effect
+    ApplyButton.MouseEnter:Connect(function()
+        TweenService:Create(ApplyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 30, 60)}):Play()
+    end)
+    ApplyButton.MouseLeave:Connect(function()
+        TweenService:Create(ApplyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 50)}):Play()
+    end)
+
+    -- Button functionality (example)
+    ApplyButton.MouseButton1Click:Connect(function()
+        print("Mooncat range applied!") -- replace with actual logic
+    end)
+
+    -- Draggable Logic
+    local dragging, dragInput, dragStart, startPos
+    local function update(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    MainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    MainFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then update(input) end
+    end)
+end
+
+-- Pet Randomizer (Keyless)
+local function Run_PetRandomizer()
+    -- Pet Randomizer Rayfield UI
+    -- Made by Kuni
+
+    -- ✅ Dependencies
+    local Players = game:GetService("Players")
+    local Workspace = game:GetService("Workspace")
+    local player = Players.LocalPlayer
+
+    local espEnabled, autoRunning = true, false
+    local truePetMap = {}
+
+    -- 🐾 Pet Table
+    local petTable = {
+        ["Common Egg"] = { "Dog", "Bunny", "Golden Lab" },
+        ["Uncommon Egg"] = { "Chicken", "Black Bunny", "Cat", "Deer" },
+        ["Rare Egg"] = { "Pig", "Monkey", "Rooster", "Orange Tabby", "Spotted Deer" },
+        ["Legendary Egg"] = { "Cow", "Polar Bear", "Sea Otter", "Turtle", "Silver Monkey" },
+        ["Mythical Egg"] = { "Grey Mouse", "Brown Mouse", "Squirrel", "Red Fox", "Red Giant Ant" },
+        ["Bug Egg"] = { "Snail", "Caterpillar", "Giant Ant", "Praying Mantis", "Dragonfly" },
+        ["Bee Egg"] = { "Bee", "Honey Bee", "Bear Bee", "Petal Bee" },
+        ["Anti Bee Egg"] = { "Wasp", "Tarantula Hawk", "Moth", "Butterfly", "Disco Bee" },
+        ["Common Summer Egg"] = { "Starfish", "Seagull", "Crab" },
+        ["Rare Summer Egg"] = { "Sea Turtle", "Flamingo", "Toucan", "Seal", "Orangutan" },
+        ["Oasis Egg"] = { "Meerkat", "Sand Snake", "Axolotl" },
+        ["Paradise Egg"] = { "Ostrich", "Peacock", "Capybara", "Mimic Octopus"},
+        ["Dinosaur Egg"] = { "Raptor", "Triceratops", "Stegosaurus", "T-Rex", "Pterodactyl", "Brontosaurus" },
+        ["Primal Egg"] = { "Spinosaurus", "Ankylosaurus", "Dilophosaurus", "Parasaurolophus", "Iguanodon" },
+        ["Night Egg"] = { "Frog", "Hedgehog", "Mole", "Echo Frog", "Night Owl" },
+        ["Zen Egg"] = { "Shiba Inu", "Nihonzaru", "Tanuki", "Tanchozuru", "Kappa", "Kitsune" },
+        ["Gourmet Egg"] = { "Bagel Bunny", "Pancake Mole", "Sushi Bear", "Spaghetti Sloth", "French Fry Ferret" }
+    }
+
+    -- 👁 ESP
+    local function applyESP(eggModel, petName)
+        if not espEnabled then return end
+        if eggModel:FindFirstChild("PetBillboard", true) then eggModel:FindFirstChild("PetBillboard", true):Destroy() end
+        local base = eggModel:FindFirstChildWhichIsA("BasePart")
+        if not base then return end
+
+        local billboard = Instance.new("BillboardGui", base)
+        billboard.Name = "PetBillboard"
+        billboard.Size = UDim2.new(0, 200, 0, 40)
+        billboard.AlwaysOnTop = true
+        billboard.StudsOffset = Vector3.new(0, 4, 0)
+
+        local label = Instance.new("TextLabel", billboard)
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.BackgroundTransparency = 1
+        label.Text = eggModel.Name .. " | " .. petName
+        label.TextScaled = true
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.Font = Enum.Font.FredokaOne
+        label.TextStrokeTransparency = 0.2
+    end
+    local function removeESP(eggModel)
+        if eggModel:FindFirstChild("PetBillboard", true) then eggModel:FindFirstChild("PetBillboard", true):Destroy() end
+    end
+
+    -- 🔍 Find Eggs
+    local function getNearbyEggs(radius)
+        local eggs = {}
+        local root = (player.Character or player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart")
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") and petTable[obj.Name] then
+                local base = obj:FindFirstChildWhichIsA("BasePart")
+                if base then
+                    local dist = (base.Position - root.Position).Magnitude
+                    if dist <= (radius or 60) then
+                        if not truePetMap[obj] then
+                            local pets = petTable[obj.Name]
+                            truePetMap[obj] = pets[math.random(1, #pets)]
+                        end
+                        table.insert(eggs, obj)
+                    end
+                end
+            end
+        end
+        return eggs
+    end
+
+    -- 🎲 Randomizer
+    local function randomizeEggs()
+        for _, egg in ipairs(getNearbyEggs(60)) do
+            local pets = petTable[egg.Name]
+            local chosen = pets[math.random(1, #pets)]
+            truePetMap[egg] = chosen
+            applyESP(egg, chosen)
+        end
+    end
+
+    -- ✅ Rayfield Setup
+    local RF = Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+    local Window = RF:CreateWindow({
+        Name = "Pet Randomizer by Kuni",
+        LoadingTitle = "Grow A Garden",
+        LoadingSubtitle = "Pet ESP + Randomizer",
+        KeySystem = false,
+    })
+
+    local Tab = Window:CreateTab("Randomizer")
+
+    -- 🎲 Manual Randomizer Button
+    Tab:CreateButton({
+        Name = "Randomize Pets (Nearby)",
+        Callback = function()
+            randomizeEggs()
+            RF:Notify({
+                Title = "Pets Randomized",
+                Content = "Nearby eggs were assigned random pets!",
+                Duration = 4
+            })
+        end,
+    })
+
+    -- ⚙️ Auto Randomizer Toggle
+    Tab:CreateToggle({
+        Name = "Auto Randomize",
+        CurrentValue = false,
+        Flag = "AutoRandomize",
+        Callback = function(Value)
+            autoRunning = Value
+            task.spawn(function()
+                while autoRunning do
+                    randomizeEggs()
+                    task.wait(3)
+                end
+            end)
+        end,
+    })
+
+    -- 👁 ESP Toggle
+    Tab:CreateToggle({
+        Name = "Show ESP",
+        CurrentValue = true,
+        Flag = "PetESP",
+        Callback = function(Value)
+            espEnabled = Value
+            for _, egg in pairs(getNearbyEggs(60)) do
+                if espEnabled then
+                    applyESP(egg, truePetMap[egg])
+                else
+                    removeESP(egg)
+                end
+            end
+        end,
+    })
+
+    -- Footer info
+    RF:Notify({
+        Title = "Pet Randomizer Loaded",
+        Content = "Made by Kuni | TikTok: @yawiyawiyawiz1",
+        Duration = 6,
+    })
+end
+
+-- Pet Weight Changer (Keyless)
+local function Run_PetWeightChanger()
+    --// Services
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    --// Load Rayfield
+    local RF = Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+    --// Window
+    local Window = RF:CreateWindow({
+        Name = "Pet Weight Changer V1",
+        LoadingTitle = "Pet Weight Changer",
+        LoadingSubtitle = "by yawiyawiyawiz",
+        ConfigurationSaving = { Enabled = false },
+        Discord = { Enabled = false },
+        KeySystem = false
+    })
+
+    --// Tabs
+    local MainTab = Window:CreateTab("Main", 4483362458)
+    local InfoTab = Window:CreateTab("Info", 4483362458)
+
+    -- Equipped Info Label
+    local equippedLabel = MainTab:CreateLabel("(Pet/Tool Equipped): [None]")
+
+    -- Cache original values per tool so scaling is stable and reversible
+    local originalCache = {}
+
+    local function getEquippedTool()
+        character = player.Character or player.CharacterAdded:Wait()
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                return tool
+            end
+        end
+        return nil
+    end
+
+    local function captureOriginals(tool)
+        if not tool or not tool.Parent then return end
+        if originalCache[tool] then return end
+
+        local list = {}
+        for _, desc in ipairs(tool:GetDescendants()) do
+            if desc:IsA("SpecialMesh") or desc:IsA("BlockMesh") or desc:IsA("FileMesh") then
+                local s = desc.Scale
+                if typeof(s) ~= "Vector3" then s = Vector3.new(1,1,1) end
+                table.insert(list, { inst = desc, kind = "Mesh", original = s })
+            elseif desc:IsA("MeshPart") then
+                local sz = desc.Size
+                if typeof(sz) ~= "Vector3" then sz = Vector3.new(1,1,1) end
+                table.insert(list, { inst = desc, kind = "MeshPart", original = sz })
+            end
+        end
+
+        originalCache[tool] = list
+    end
+
+    local function applyFactor(tool, factor)
+        if not tool then return end
+        captureOriginals(tool)
+        local list = originalCache[tool]
+        if not list or #list == 0 then return end
+
+        for _, entry in ipairs(list) do
+            if entry.inst and entry.inst.Parent then
+                if entry.kind == "Mesh" then
+                    local orig = entry.original or Vector3.new(1,1,1)
+                    entry.inst.Scale = Vector3.new(orig.X * factor, orig.Y * factor, orig.Z * factor)
+                elseif entry.kind == "MeshPart" then
+                    local orig = entry.original or Vector3.new(1,1,1)
+                    entry.inst.Size = Vector3.new(orig.X * factor, orig.Y * factor, orig.Z * factor)
+                end
+            end
+        end
+    end
+
+    local function resetToOriginal(tool)
+        if not tool then return end
+        local list = originalCache[tool]
+        if not list then return end
+
+        for _, entry in ipairs(list) do
+            if entry.inst and entry.inst.Parent then
+                if entry.kind == "Mesh" then
+                    entry.inst.Scale = entry.original or Vector3.new(1,1,1)
+                elseif entry.kind == "MeshPart" then
+                    entry.inst.Size = entry.original or Vector3.new(1,1,1)
+                end
+            end
+        end
+
+        originalCache[tool] = nil
+    end
+
+    local WeightBox = MainTab:CreateInput({
+        Name = "Enter Weight Factor",
+        PlaceholderText = "Example: 2 (double size), 0.5 (half size)",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text) end,
+    })
+
+    MainTab:CreateButton({
+        Name = "Apply Weight",
+        Callback = function()
+            local tool = getEquippedTool()
+            if not tool then
+                equippedLabel:Set("(No Equipped Pet/Tool detected)")
+                RF:Notify({ Title = "Error", Content = "No equipped tool found", Duration = 2 })
+                return
+            end
+
+            local txt = WeightBox.CurrentValue or WeightBox:Get()
+            local factor = tonumber(txt)
+            if not factor or factor <= 0 then
+                equippedLabel:Set("(Enter valid weight factor)")
+                RF:Notify({ Title = "Error", Content = "Enter a valid number > 0", Duration = 2 })
+                return
+            end
+
+            for i = 10, 1, -1 do
+                RF:Notify({ Title = "Applying", Content = "Applying in " .. i .. "s", Duration = 1 })
+                task.wait(1)
+            end
+
+            applyFactor(tool, factor)
+            equippedLabel:Set("(Applied weight factor: x" .. tostring(factor) .. ")")
+            RF:Notify({ Title = "Done", Content = "Applied factor x" .. tostring(factor), Duration = 2 })
+        end
+    })
+
+    MainTab:CreateButton({
+        Name = "Reset Weight",
+        Callback = function()
+            local tool = getEquippedTool()
+            if not tool then
+                equippedLabel:Set("(No Equipped Pet/Tool detected)")
+                return
+            end
+            resetToOriginal(tool)
+            equippedLabel:Set("(Reset to original)")
+            RF:Notify({ Title = "Reset", Content = "Restored original sizes", Duration = 2 })
+        end
+    })
+
+    local lastTool = nil
+    task.spawn(function()
+        while true do
+            local tool = getEquippedTool()
+            if tool then
+                equippedLabel:Set("(Pet/Tool Equipped): " .. tool.Name)
+                if tool ~= lastTool then
+                    captureOriginals(tool)
+                    lastTool = tool
+                end
+            else
+                equippedLabel:Set("(No Equipped Pet/Tool detected)")
+                lastTool = nil
+            end
+            task.wait(1)
+        end
+    end)
+
+    InfoTab:CreateLabel("Tiktok: @yawiyawiyawiz")
+end
+
+-- Kuni Hub X (FullFeaturesObsa)
+local function Run_KuniHubX()
+    -- 🌸 Kuni Hub X GUI (Rayfield)
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+
+    local RF = Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+    local Window = RF:CreateWindow({
+        Name = "Kuni Hub X",
+        LoadingTitle = "Kuni Hub X",
+        LoadingSubtitle = "by Kuni"
+    })
+
+    local MainTab = Window:CreateTab("Main")
+    MainTab:CreateSection("Utilities")
+
+    local buttonList = {
+        {Name = "⏳ Open Pet Age Changer", Callback = function()
+            Run_PetAgeChanger()
+        end},
+        {Name = "🧬 Open Pet Mutation Finder", Callback = function()
+            Run_PetMutationFinder()
+        end},
+        {Name = "🛠 Duplicator", Callback = function()
+            Run_PetDuplicator()
+        end}
+    }
+
+    for _, btn in ipairs(buttonList) do
+        MainTab:CreateButton({
+            Name = btn.Name,
+            Callback = btn.Callback
+        })
+    end
+end
+
+-- Pet Age Changer
+function Run_PetAgeChanger()
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+    screenGui.Name = "KuniPetAgeLeveller"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local frame = Instance.new("Frame", screenGui)
+    frame.Size = UDim2.new(0, 320, 0, 200)
+    frame.Position = UDim2.new(0.5, -160, 0.5, -100)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BackgroundTransparency = 0.6
+    frame.Active = true
+    frame.Draggable = true
+    frame.Name = "PetAgeFrame"
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(0, 200, 255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.5
+
+    local title = Instance.new("TextLabel", frame)
+    title.Text = "🌸 Pet Age Leveller 🌸"
+    title.Font = Enum.Font.FredokaOne
+    title.TextSize = 20
+    title.TextColor3 = Color3.fromRGB(0, 200, 255)
+    title.BackgroundTransparency = 1
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.Position = UDim2.new(0, 0, 0, 5)
+
+    local petInfo = Instance.new("TextLabel", frame)
+    petInfo.Text = "Equipped Pet: [None]"
+    petInfo.Font = Enum.Font.FredokaOne
+    petInfo.TextSize = 16
+    petInfo.TextColor3 = Color3.fromRGB(0, 200, 255)
+    petInfo.BackgroundTransparency = 1
+    petInfo.Position = UDim2.new(0, 12, 0, 40)
+    petInfo.Size = UDim2.new(1, -24, 0, 24)
+    petInfo.TextXAlignment = Enum.TextXAlignment.Left
+
+    local button = Instance.new("TextButton", frame)
+    button.Text = "🎀 Set Age to 50 🎀"
+    button.Font = Enum.Font.FredokaOne
+    button.TextSize = 16
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.BackgroundTransparency = 0.6
+    button.Size = UDim2.new(0, 220, 0, 36)
+    button.Position = UDim2.new(0.5, -110, 0, 76)
+    Instance.new("UICorner", button)
+    local btnStroke = Instance.new("UIStroke", button)
+    btnStroke.Color = Color3.fromRGB(0, 200, 255)
+    btnStroke.Thickness = 1.5
+    btnStroke.Transparency = 0.5
+
+    local addAgeButton = Instance.new("TextButton", frame)
+    addAgeButton.Text = "🌟 Add +1 Age 🌟"
+    addAgeButton.Font = Enum.Font.FredokaOne
+    addAgeButton.TextSize = 16
+    addAgeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    addAgeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    addAgeButton.BackgroundTransparency = 0.6
+    addAgeButton.Size = UDim2.new(0, 220, 0, 36)
+    addAgeButton.Position = UDim2.new(0.5, -110, 0, 122)
+    Instance.new("UICorner", addAgeButton)
+    local addStroke = Instance.new("UIStroke", addAgeButton)
+    addStroke.Color = Color3.fromRGB(0, 200, 255)
+    addStroke.Thickness = 1.5
+    addStroke.Transparency = 0.5
+
+    local footer = Instance.new("TextLabel", frame)
+    footer.Text = "Tiktok: @yawiyawiyawiz1"
+    footer.Font = Enum.Font.FredokaOne
+    footer.TextSize = 13
+    footer.TextColor3 = Color3.fromRGB(0, 200, 255)
+    footer.BackgroundTransparency = 1
+    footer.Size = UDim2.new(1, 0, 0, 20)
+    footer.Position = UDim2.new(0, 0, 1, -20)
+
+    local function getEquippedPetTool()
+        character = player.Character or player.CharacterAdded:Wait()
+        for _, child in pairs(character:GetChildren()) do
+            if child:IsA("Tool") and (child.Name:find("Age") or child:FindFirstChild("Mutation")) then
+                return child
+            end
+        end
+        return nil
+    end
+
+    local function updateGUI()
+        local pet = getEquippedPetTool()
+        if pet then
+            petInfo.Text = "Equipped Pet: " .. pet.Name
+        else
+            petInfo.Text = "Equipped Pet: [None]"
+        end
+    end
+
+    button.MouseButton1Click:Connect(function()
+        local tool = getEquippedPetTool()
+        if tool then
+            for i = 5, 1, -1 do
+                button.Text = "🎀 Setting Age in " .. i .. "..."
+                task.wait(1)
+            end
+            local newName = tool.Name:gsub("%[Age%s%d+%]", "[Age 50]")
+            tool.Name = newName
+            petInfo.Text = "Equipped Pet: " .. tool.Name
+            button.Text = "🎀 Set Age to 50 🎀"
+        else
+            button.Text = "🎀 No Pet Equipped! 🎀"
+            task.wait(2)
+            button.Text = "🎀 Set Age to 50 🎀"
+        end
+    end)
+
+    addAgeButton.MouseButton1Click:Connect(function()
+        local tool = getEquippedPetTool()
+        if tool then
+            local currentAge = tonumber(tool.Name:match("%[Age%s(%d+)%]"))
+            if currentAge and currentAge < 100 then
+                for i = 3, 1, -1 do
+                    addAgeButton.Text = "🌟 Adding +1 in " .. i .. "..."
+                    task.wait(1)
+                end
+                local newAge = currentAge + 1
+                local newName = tool.Name:gsub("%[Age%s%d+%]", "[Age " .. newAge .. "]")
+                tool.Name = newName
+                petInfo.Text = "Equipped Pet: " .. tool.Name
+                addAgeButton.Text = "🌟 Add +1 Age 🌟"
+            elseif currentAge and currentAge >= 100 then
+                addAgeButton.Text = "🌟 Max Age is 100! 🌟"
+                task.wait(2)
+                addAgeButton.Text = "🌟 Add +1 Age 🌟"
+            else
+                addAgeButton.Text = "🌟 Invalid Age Format! 🌟"
+                task.wait(2)
+                addAgeButton.Text = "🌟 Add +1 Age 🌟"
+            end
+        else
+            addAgeButton.Text = "🌟 No Pet Equipped! 🌟"
+            task.wait(2)
+            addAgeButton.Text = "🌟 Add +1 Age 🌟"
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            updateGUI()
+            task.wait(1)
+        end
+    end)
+end
+
+-- Pet Mutation Finder (Mt)
+function Run_PetMutationFinder()
+    local RF = Rayfield or loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+    local Window = RF:CreateWindow({
+        Name = "Pet Mutation Finder v2",
+        LoadingTitle = "Pet Mutation Finder",
+        LoadingSubtitle = "by Kuni",
+        ConfigurationSaving = {Enabled = false},
+        Discord = {Enabled = false}
+    })
+
+    local MainTab = Window:CreateTab("Main")
+    local FinderTab = Window:CreateTab("Finder")
+    local CreditsTab = Window:CreateTab("Credits")
+
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local Workspace = game:GetService("Workspace")
+    local RunService = game:GetService("RunService")
+
+    local mutations = {
+        "Shiny", "Inverted", "Frozen", "Windy", "Golden", "Mega", "Tiny",
+        "Tranquil", "IronSkin", "Radiant", "Rainbow", "Shocked", "Ascended"
+    }
+    local currentMutation = mutations[math.random(#mutations)]
+    local espLabel
+    local espVisible = true
+
+    local function findMachine()
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") and obj.Name:lower():find("mutation") then
+                return obj
+            end
+        end
+    end
+
+    local machine = findMachine()
+    if not machine or not machine:FindFirstChildWhichIsA("BasePart") then
+        warn("Pet Mutation Machine not found.")
+        return
+    end
+    local basePart = machine:FindFirstChildWhichIsA("BasePart")
+
+    local espGui = Instance.new("BillboardGui", basePart)
+    espGui.Name = "MutationESP"
+    espGui.Adornee = basePart
+    espGui.Size = UDim2.new(0, 180, 0, 36)
+    espGui.StudsOffset = Vector3.new(0, 3, 0)
+    espGui.AlwaysOnTop = true
+
+    espLabel = Instance.new("TextLabel", espGui)
+    espLabel.Size = UDim2.new(1, 0, 1, 0)
+    espLabel.BackgroundTransparency = 1
+    espLabel.Font = Enum.Font.GothamBold
+    espLabel.TextSize = 22
+    espLabel.TextStrokeTransparency = 0.2
+    espLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    espLabel.Text = currentMutation
+
+    local hue = 0
+    RunService.RenderStepped:Connect(function()
+        if espVisible and espLabel then
+            hue = (hue + 0.005) % 1
+            espLabel.TextColor3 = Color3.fromHSV(hue, 0.8, 1)
+        end
+    end)
+
+    local rerollBtn
+    local autoBtn
+
+    rerollBtn = MainTab:CreateButton({
+        Name = "Mutation Reroll",
+        Callback = function()
+            if not espLabel then return end
+            rerollBtn.Text = "Rerolling..."
+            for i = 1, 20 do
+                espLabel.Text = mutations[math.random(#mutations)]
+                task.wait(0.1)
+            end
+            currentMutation = mutations[math.random(#mutations)]
+            espLabel.Text = currentMutation
+            rerollBtn.Text = "Mutation Reroll"
+        end
+    })
+
+    autoBtn = MainTab:CreateButton({
+        Name = "Auto Get Ascended",
+        Callback = function()
+            if not espLabel then return end
+            autoBtn.Text = "Getting Ascended..."
+            for t = 1, 40 do
+                currentMutation = mutations[math.random(#mutations - 1)]
+                espLabel.Text = currentMutation
+                task.wait(1)
+            end
+            currentMutation = "Ascended"
+            espLabel.Text = currentMutation
+            autoBtn.Text = "ASCENDED FOUND!"
+            task.wait(2)
+            autoBtn.Text = "Auto Get Ascended"
+        end
+    })
+
+    CreditsTab:CreateLabel("Made by Kuni")
+    CreditsTab:CreateLabel("TikTok: @yawiyawiyawiz1")
+end
+
+-- Pet Duplicator
+function Run_PetDuplicator()
+    --// Services
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+
+    --// Load Rayfield
+    local RF = Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+    --// Window
+    local Window = RF:CreateWindow({
+        Name = "Pet Duplicator V1",
+        LoadingTitle = "Pet Duplicator",
+        LoadingSubtitle = "by yawiyawiyawiz1",
+        ConfigurationSaving = {
+            Enabled = false,
+            FolderName = nil,
+            FileName = "PetDuplicator"
+        },
+        Discord = {
+            Enabled = false,
+            Invite = "",
+            RememberJoins = false
+        },
+        KeySystem = false,
+    })
+
+    --// Tabs
+    local MainTab = Window:CreateTab("Main", 4483362458)
+    local InfoTab = Window:CreateTab("Info", 4483362458)
+
+    --// Variables
+    local multiplier = 1
+    local character = player.Character or player.CharacterAdded:Wait()
+    local function getEquippedTool()
+        character = player.Character or player.CharacterAdded:Wait()
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+                return tool
+            end
+        end
+        return nil
+    end
+
+    local equippedLabel = MainTab:CreateLabel("(Pet/Item Equipped): [None]")
+
+    task.spawn(function()
+        while true do
+            local tool = getEquippedTool()
+            if tool then
+                equippedLabel:Set("(Pet/Item Equipped): " .. tool.Name)
+            else
+                equippedLabel:Set("(Pet/Item Equipped): [None]")
+            end
+            task.wait(1)
+        end
+    end)
+
+    MainTab:CreateSlider({
+        Name = "Multiplier",
+        Range = {1, 100},
+        Increment = 1,
+        Suffix = "x",
+        CurrentValue = 1,
+        Flag = "MultiplierSlider",
+        Callback = function(Value)
+            multiplier = Value
+        end,
+    })
+
+    MainTab:CreateButton({
+        Name = "Duplicate Pet/Item",
+        Callback = function()
+            local tool = getEquippedTool()
+            if not tool then
+                RF:Notify({
+                    Title = "Error",
+                    Content = "No Equipped Pet/Item detected",
+                    Duration = 3,
+                    Image = 4483362458
+                })
+                return
+            end
+
+            for i = 10,1,-1 do
+                RF:Notify({
+                    Title = "Loading",
+                    Content = "Please wait " .. i .. "s",
+                    Duration = 1,
+                })
+                task.wait(1)
+            end
+
+            for i = 1, multiplier do
+                local clone = tool:Clone()
+                clone.Name = tool.Name
+                clone.Parent = player.Backpack
+            end
+
+            RF:Notify({
+                Title = "Success",
+                Content = "(Pet/Item Duplicated) x" .. multiplier,
+                Duration = 3,
+            })
+        end,
+    })
+
+    InfoTab:CreateLabel("Tiktok: @yawiyawiyawiz1")
+end
+
+-- Duplicate Tag Remover (tagremover)
+local function Run_TagRemover()
+    -- 🖤 Glass/Dark Remove Dupe Tag GUI
+
+    --// Services
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+    local player = Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- ===== CONFIG =====
+    local DUPLICATE_PHRASE = "You cannot trade this pet since it is duplicated"
+    local REPLACEMENT_TEXT = "Your trade is processing, please wait until your trade finalizes before creating another one."
+    local REPLACEMENT_COLOR = Color3.fromRGB(0, 200, 255)
+    -- ==================
+
+    local function containsIgnoreCase(haystack, needle)
+        if not haystack or not needle then return false end
+        return string.find(string.lower(haystack), string.lower(needle)) ~= nil
+    end
+
+    local function fixWarningLabelProps(desc)
+        pcall(function()
+            desc.Text = REPLACEMENT_TEXT
+            desc.TextColor3 = REPLACEMENT_COLOR
+            desc.Font = Enum.Font.GothamBold
+            desc.TextScaled = false
+            desc.TextSize = 16
+            desc.TextWrapped = true
+            desc.TextXAlignment = Enum.TextXAlignment.Center
+            desc.TextYAlignment = Enum.TextYAlignment.Center
+            desc.Size = UDim2.new(0, 330, 0, 50)
+            desc.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+            desc.TextStrokeTransparency = 0
+        end)
+    end
+
+    local function replaceDuplicateWarningsInGui(root)
+        for _, desc in ipairs(root:GetDescendants()) do
+            if (desc:IsA("TextLabel") or desc:IsA("TextBox") or desc:IsA("TextButton")) and desc.Text and desc.Text ~= "" then
+                if containsIgnoreCase(desc.Text, DUPLICATE_PHRASE) then
+                    fixWarningLabelProps(desc)
+                end
+            end
+        end
+    end
+
+    local function hookGuiReplacement()
+        replaceDuplicateWarningsInGui(playerGui)
+        playerGui.DescendantAdded:Connect(function(desc)
+            task.wait(0.05)
+            if desc and (desc:IsA("TextLabel") or desc:IsA("TextBox") or desc:IsA("TextButton")) then
+                if containsIgnoreCase(desc.Text or "", DUPLICATE_PHRASE) then
+                    fixWarningLabelProps(desc)
+                end
+            end
+        end)
+    end
+
+    local function getEquippedPetTool()
+        character = player.Character or player.CharacterAdded:Wait()
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+                return tool
+            end
+        end
+        return nil
+    end
+
+    local function removeDupeTagFrom(tool)
+        if not tool then return end
+        for _, v in ipairs(tool:GetDescendants()) do
+            if v:IsA("StringValue") or v:IsA("TextLabel") then
+                if string.find(string.lower(v.Name), "duplicate")
+                    or string.find(string.lower(v.Value or ""), "cannot trade this pet since it is duplicated") then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "RemoveTagGUIGlass"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
+
+    local mainFrame = Instance.new("Frame", screenGui)
+    mainFrame.Size = UDim2.new(0, 300, 0, 180)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    mainFrame.BackgroundTransparency = 0.6
+    mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 16)
+
+    local stroke = Instance.new("UIStroke", mainFrame)
+    stroke.Color = Color3.fromRGB(0, 200, 255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.5
+
+    local dragging, dragInput, dragStart, startPos
+    local function update(input)
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    mainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    mainFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then update(input) end
+    end)
+
+    local title = Instance.new("TextLabel", mainFrame)
+    title.Size = UDim2.new(1, -10, 0, 30)
+    title.Position = UDim2.new(0, 5, 0, 5)
+    title.BackgroundTransparency = 1
+    title.Text = "🛠️ Remover Dupe Tag v1 ✨"
+    title.Font = Enum.Font.GothamBlack
+    title.TextSize = 20
+    title.TextColor3 = Color3.fromRGB(0, 200, 255)
+    title.TextStrokeTransparency = 0.5
+
+    local toggleBtn = Instance.new("TextButton", mainFrame)
+    toggleBtn.Size = UDim2.new(0, 250, 0, 40)
+    toggleBtn.Position = UDim2.new(0.5, -125, 0, 50)
+    toggleBtn.Text = "💖 Enable Remove Dupe Tag 💖"
+    toggleBtn.Font = Enum.Font.GothamBold
+    toggleBtn.TextSize = 16
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+    toggleBtn.TextColor3 = Color3.fromRGB(0, 200, 255)
+    Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 8)
+
+    toggleBtn.MouseEnter:Connect(function()
+        TweenService:Create(toggleBtn,TweenInfo.new(0.2),{BackgroundColor3=Color3.fromRGB(0,30,60)}):Play()
+    end)
+    toggleBtn.MouseLeave:Connect(function()
+        TweenService:Create(toggleBtn,TweenInfo.new(0.2),{BackgroundColor3=Color3.fromRGB(30,30,50)}):Play()
+    end)
+
+    local statusLabel = Instance.new("TextLabel", mainFrame)
+    statusLabel.Size = UDim2.new(1, -20, 0, 40)
+    statusLabel.Position = UDim2.new(0, 10, 0, 100)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.TextSize = 14
+    statusLabel.TextWrapped = true
+    statusLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+    statusLabel.Text = "Status: Disabled"
+
+    local footer = Instance.new("TextLabel", mainFrame)
+    footer.Size = UDim2.new(1, -10, 0, 16)
+    footer.Position = UDim2.new(0, 5, 1, -16)
+    footer.BackgroundTransparency = 1
+    footer.Font = Enum.Font.Gotham
+    footer.TextSize = 10
+    footer.TextColor3 = Color3.fromRGB(0, 200, 255)
+    footer.Text = "✨ TikTok: @yawiyawiyawiz 🐾"
+    footer.TextXAlignment = Enum.TextXAlignment.Center
+    footer.TextYAlignment = Enum.TextYAlignment.Center
+
+    local enabled = false
+    local connection
+
+    toggleBtn.MouseButton1Click:Connect(function()
+        if not enabled then
+            toggleBtn.Text = "⏳ Loading..."
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
+            for i = 15, 1, -1 do
+                toggleBtn.Text = "💖 Enabling in " .. i .. "s 💖"
+                task.wait(1)
+            end
+
+            statusLabel.Text = "Status: Enabled 🎉"
+            enabled = true
+            hookGuiReplacement()
+
+            connection = character.ChildAdded:Connect(function(child)
+                if enabled and child:IsA("Tool") then
+                    removeDupeTagFrom(child)
+                end
+            end)
+
+            local current = getEquippedPetTool()
+            if current then removeDupeTagFrom(current) end
+
+            toggleBtn.Text = "💖 Disable Remove Dupe Tag 💖"
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+        else
+            enabled = false
+            statusLabel.Text = "Status: Disabled ❌"
+            toggleBtn.Text = " Enable Remove Dupe Tag "
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+        end
+    end)
+end
+
+----------------------------------------------------------------
+-- BUTTONS (wired to embedded or remote depending on what you sent)
+----------------------------------------------------------------
+
+--// Pet Scripts
+createRemoteButton(PetsTab, "Rayfield Dark Spawner", "https://gitlab.com/darkiedarkie/dark/-/raw/main/Spawner.lua") -- remote (no source provided)
+PetsTab:CreateButton({ Name = "Moon Cat Ability Range Changer", Callback = Run_MoonCatChanger })
+PetsTab:CreateButton({ Name = "Pet Randomizer (Keyless)", Callback = Run_PetRandomizer })
+PetsTab:CreateButton({ Name = "Pet Weight Changer (Keyless)", Callback = Run_PetWeightChanger })
+
+--// Script Hubs
+HubsTab:CreateButton({ Name = "Kuni Hub X (Keyless)", Callback = Run_KuniHubX }) -- embedded
+createRemoteButton(HubsTab, "Project Reverse (Keyless)", "https://raw.githubusercontent.com/veryimportantrr/x/refs/heads/main/gag_visual.lua") -- remote
+createRemoteButton(HubsTab, "Speed Hub X (Keyless)", "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua") -- remote
+createRemoteButton(HubsTab, "Nat Hub Loader (Key)", "https://get.nathub.xyz/loader") -- remote
+createRemoteButton(HubsTab, "ThanHub (Keyless)", "https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1") -- remote
+createRemoteButton(HubsTab, "Limit Hub (Key)", "https://raw.githubusercontent.com/FakeModz/LimitHub/refs/heads/main/LimitHub_Luarmor_E.lua") -- remote
+createRemoteButton(HubsTab, "ThunderZ Hub (Keyless)", "https://raw.githubusercontent.com/ThundarZ/Welcome/refs/heads/main/Main/GaG/Main.lua") -- remote
+
+--// Utilities
+UtilsTab:CreateButton({ Name = "Duplicate Tag Remover (Keyless)", Callback = Run_TagRemover }) -- embedded
+
+--// Footer Info
+Rayfield:Notify({
+    Title = "Loader Ready",
+    Content = "All scripts loaded into Rayfield UI with tabs!",
+    Duration = 6,
+})
